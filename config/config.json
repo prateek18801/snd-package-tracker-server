@@ -1,0 +1,23 @@
+{
+    "courier": [
+        "ATS",
+        "Ekart",
+        "XpressBees",
+        "Bluedart",
+        "DTDC",
+        "Movin"
+    ],
+    "channel": [
+        "Amazon",
+        "Flipkart",
+        "Firstcry",
+        "Website",
+        "Application"
+    ],
+    "role": [
+        "executive",
+        "administrator",
+        "manager",
+        "root"
+    ]
+}
