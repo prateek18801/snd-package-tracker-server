@@ -24,7 +24,14 @@ const patchUsers = async (req, res, next) => {
 }
 
 const deleteUsers = async (req, res, next) => {
-
+    const id = req.params.id;
+    try {
+        // TODO - handle invalid ObjectId error
+        await User.findByIdAndDelete(id);
+        return res.status(204).json();
+    } catch (err) {
+        next(err);
+    }
 }
 
 module.exports = {
