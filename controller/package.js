@@ -11,7 +11,7 @@ const deletePackages = (req, res, next) => {
 
 }
 
-module.exports = {
+export {
     getPackages,
     postPackages,
     patchPackages,

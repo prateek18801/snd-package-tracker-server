@@ -1,4 +1,7 @@
-const fs = require("fs");
-const path = require("path")
+import fs from "fs";
+import path from "path";
 
-module.exports = JSON.parse(fs.readFileSync(path.resolve("config", "config.json")));
+const filePath = path.resolve("config", "config.json");
+const config = JSON.parse(fs.readFileSync(filePath));
+
+export default config;

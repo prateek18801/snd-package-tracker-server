@@ -1,7 +1,7 @@
-const express = require("express");
-const cors = require("cors");
-const db = require("./utils/db");
-const router = require("./router");
+import express from "express";
+import cors from "cors";
+import db from "./utils/db.js";
+import router from "./router/index.js";
 
 const app = express();
 app.use(express.json());

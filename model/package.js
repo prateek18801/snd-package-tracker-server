@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
-const config = require("../utils/config");
+import { Schema, model } from "mongoose";
+import config from "../utils/config.js";
 
-const PackageSchema = new mongoose.Schema({
+const PackageSchema = new Schema({
     package_id: {
         type: String,
         required: true,
@@ -18,7 +18,7 @@ const PackageSchema = new mongoose.Schema({
         enum: config.channel
     },
     updated_by: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         required: true,
         ref: "User"
     },
@@ -28,7 +28,7 @@ const PackageSchema = new mongoose.Schema({
             default: Date.now
         },
         executive: {
-            type: mongoose.Schema.Types.ObjectId,
+            type: Schema.Types.ObjectId,
             required: true,
             ref: "User"
         },
@@ -37,7 +37,7 @@ const PackageSchema = new mongoose.Schema({
     incoming: {
         timestamp: Date,
         executive: {
-            type: mongoose.Schema.Types.ObjectId,
+            type: Schema.Types.ObjectId,
             ref: "User"
         },
         remarks: String
@@ -53,4 +53,4 @@ const PackageSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model("Package", PackageSchema);
+export default model("Package", PackageSchema);

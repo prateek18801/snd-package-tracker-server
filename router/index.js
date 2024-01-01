@@ -1,18 +1,20 @@
-const router = require("express").Router();
+import { Router } from "express";
 
-const {
+import {
     getUsers,
     postUsers,
     patchUsers,
     deleteUsers
-} = require("../controller/user");
+} from "../controller/user.js";
 
-const {
+import {
     getPackages,
     postPackages,
     patchPackages,
-    deletePackages
-} = require("../controller/package");
+    deletePackages,
+} from "../controller/package.js";
+
+const router = Router();
 
 // user routes
 router.get("/v1/users/:id?", getUsers);
@@ -26,4 +28,4 @@ router.post("/v1/packages", postPackages);
 router.patch("/v1/packages/:id", patchPackages);
 router.delete("/v1/packages/:id", deletePackages);
 
-module.exports = router;
+export default router;
