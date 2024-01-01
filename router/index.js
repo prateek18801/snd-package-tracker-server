@@ -15,13 +15,13 @@ const {
 } = require("../controller/package");
 
 // user routes
-router.get("/v1/users", getUsers);
+router.get("/v1/users/:id?", getUsers);
 router.post("/v1/users", postUsers);
 router.patch("/v1/users/:id", patchUsers);
 router.delete("/v1/users/:id", deleteUsers);
 
 // package routes
-router.get("/v1/packages", getPackages);
+router.get("/v1/packages/:id?", getPackages);
 router.post("/v1/packages", postPackages);
 router.patch("/v1/packages/:id", patchPackages);
 router.delete("/v1/packages/:id", deletePackages);
