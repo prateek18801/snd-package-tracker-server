@@ -1,10 +1,8 @@
 import Package from "../model/package.js";
 import { isUnder, isOver } from "../utils/authorization.js";
 
-// TODO - manage permissions by user role in every controller
-
-
 const getPackages = async (req, res, next) => {
+    // role >= executive
     const id = req.params.id;
     try {
         if (id) {
@@ -61,24 +59,26 @@ const getPackages = async (req, res, next) => {
 }
 
 const postPackages = async (req, res, next) => {
+    // role >= executive
     const data = {
         package_id: req.body.package_id,
         courier: req.body.courier,
         channel: req.body.channel,
         updated_by: req.user.sub,
         outgoing: {
+            // update timestamp only if role >= administrator
             timestamp: isOver(req.user.role, "executive") ? (req.body.timestamp || Date.now()) : Date.now(),
             executive: req.user.sub,
             remarks: req.body.remarks
         }
     }
     try {
-        const _package = (await new Package(data).save()).toObject();
+        const sPackage = await new Package(data).save();
         return res.status(201).set({
-            "location": `/v1/packages/${_package._id}`
+            "location": `/v1/packages/${sPackage._id}`
         }).json({
             message: "package created",
-            data: _package
+            data: sPackage
         });
     } catch (err) {
         next(err);
@@ -86,14 +86,11 @@ const postPackages = async (req, res, next) => {
 }
 
 const patchPackages = async (req, res, next) => {
-
     const id = req.params.id;
     const _return = req.query.return;
     let update = {};
     try {
-
-        // if return add mark return == true update incoming - for all users
-        // else update only the before fileds - for admins and above
+        // if return ? role >= executive : role >= administrator
         if (_return === "true") {
             update = {
                 return: true,
@@ -121,14 +118,13 @@ const patchPackages = async (req, res, next) => {
                 }
             }   
         }
-        
-        const _package = await Package.findOneAndUpdate({package_id: id}, update, { new: true })
+        const uPackage = await Package.findOneAndUpdate({package_id: id}, update, { new: true })
             .select({ __v: 0 })
             .lean();
-        if (_package) {
+        if (uPackage) {
             return res.status(200).json({
                 message: "package updated",
-                data: _package
+                data: uPackage
             });
         }
         return res.status(400).json({
@@ -140,12 +136,7 @@ const patchPackages = async (req, res, next) => {
 }
 
 const deletePackages = async (req, res, next) => {
-    // minimum administrator level permission required to delete package
-    if (isUnder(req.user.role, "administrator")) {
-        return res.status(403).json({
-            message: "forbidden"
-        });
-    }
+    // role >= administrator
     const id = req.params.id;
     try {
         // TODO - handle invalid ObjectId error
