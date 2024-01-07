@@ -24,8 +24,8 @@ const getUsers = async (req, res, next) => {
             }
         });
 
-        const page = Math.max(req.query.page, 1);
-        const limit = +req.query.limit || 1000;
+        const page = req.query.page ? Math.max(+req.query.page, 1) : 1;
+        const limit = req.query.limit ? Math.max(+req.query.limit, 1) : 1000;
         const user = await User.find(filter)
             .select({
                 __v: 0,
