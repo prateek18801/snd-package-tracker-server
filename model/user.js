@@ -40,7 +40,7 @@ UserSchema.pre('save', async function (next) {
 });
 
 UserSchema.methods.match = async function (password) {
-    return await compare(password, this.password);
+    return compare(password, this.password);
 }
 
 export default model("User", UserSchema);
