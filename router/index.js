@@ -21,20 +21,20 @@ const router = Router();
 router.post("/v1/login", postLogin);
 
 // user routes
-router.get("/v1/users/:id?", auth(), getUsers);
-router.post("/v1/users", auth(), postUsers);
-router.patch("/v1/users/:id", auth(), patchUsers);
-router.delete("/v1/users/:id", auth(), deleteUsers);
+router.get("/v1/users/:id?", auth("administrator"), getUsers);
+router.post("/v1/users", auth("manager"), postUsers);
+router.patch("/v1/users/:id", auth("manager"), patchUsers);
+router.delete("/v1/users/:id", auth("manager"), deleteUsers);
 
 // package routes
-router.get("/v1/packages/:id?", auth(), getPackages);
-router.post("/v1/packages", auth(), postPackages);
-router.patch("/v1/packages/:id", auth(), patchPackages);
-router.delete("/v1/packages/:id", auth(), deletePackages);
+router.get("/v1/packages/:id?", auth("executive"), getPackages);
+router.post("/v1/packages", auth("executive"), postPackages);
+router.patch("/v1/packages/:id", auth("executive"), patchPackages);
+router.delete("/v1/packages/:id", auth("administrator"), deletePackages);
 
 // health routes
 router.get("/ping", ping);
-router.get("/health", auth(), health);
-router.post("/health", auth(), health);
+router.get("/health", auth("administrator"), health);
+router.post("/health", auth("administrator"), health);
 
 export default router;
