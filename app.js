@@ -9,12 +9,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 app.use(router);
 
-app.get("/ping", (req, res, next) => {
-    return res.status(200).json({
-        message: "🟢 server running"
-    });
-});
-
 app.use((err, req, res, next) => {
     return res.status(err.status || 500).json({
         message: err.message,
