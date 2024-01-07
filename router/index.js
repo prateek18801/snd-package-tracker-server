@@ -1,12 +1,11 @@
 import { Router } from "express";
-
+import { postLogin } from "../controller/auth.js";
 import {
     getUsers,
     postUsers,
     patchUsers,
     deleteUsers
 } from "../controller/user.js";
-
 import {
     getPackages,
     postPackages,
@@ -15,6 +14,9 @@ import {
 } from "../controller/package.js";
 
 const router = Router();
+
+// auth routes
+router.post("/v1/login", postLogin);
 
 // user routes
 router.get("/v1/users/:id?", getUsers);
