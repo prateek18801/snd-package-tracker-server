@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { postLogin } from "../controller/auth.js";
+import auth from "../middleware/auth.js";
 import {
     getUsers,
     postUsers,
@@ -12,6 +12,7 @@ import {
     patchPackages,
     deletePackages,
 } from "../controller/package.js";
+import { postLogin } from "../controller/auth.js";
 
 const router = Router();
 
@@ -19,15 +20,15 @@ const router = Router();
 router.post("/v1/login", postLogin);
 
 // user routes
-router.get("/v1/users/:id?", getUsers);
-router.post("/v1/users", postUsers);
-router.patch("/v1/users/:id", patchUsers);
-router.delete("/v1/users/:id", deleteUsers);
+router.get("/v1/users/:id?", auth(), getUsers);
+router.post("/v1/users", auth(), postUsers);
+router.patch("/v1/users/:id", auth(), patchUsers);
+router.delete("/v1/users/:id", auth(), deleteUsers);
 
 // package routes
-router.get("/v1/packages/:id?", getPackages);
-router.post("/v1/packages", postPackages);
-router.patch("/v1/packages/:id", patchPackages);
-router.delete("/v1/packages/:id", deletePackages);
+router.get("/v1/packages/:id?", auth(), getPackages);
+router.post("/v1/packages", auth(), postPackages);
+router.patch("/v1/packages/:id", auth(), patchPackages);
+router.delete("/v1/packages/:id", auth(), deletePackages);
 
 export default router;
