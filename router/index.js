@@ -12,6 +12,12 @@ import {
     patchPackages,
     deletePackages,
 } from "../controller/package.js";
+import {
+    getTasks,
+    postTasks,
+    patchTasks,
+    deleteTasks
+} from "../controller/task.js";
 import { postLogin } from "../controller/auth.js";
 import { ping, health } from "../controller/health.js";
 
@@ -31,6 +37,12 @@ router.get("/v1/packages/:id?", auth("executive"), getPackages);
 router.post("/v1/packages", auth("executive"), postPackages);
 router.patch("/v1/packages/:id", auth("executive"), patchPackages);
 router.delete("/v1/packages/:id", auth("administrator"), deletePackages);
+
+// task routes
+router.get("/v1/tasks/:id?", auth("executive"), getTasks);
+router.post("/v1/tasks", auth("executive"), postTasks);
+router.patch("/v1/tasks/:id", auth("executive"), patchTasks);
+router.delete("/v1/tasks/:id", auth("administrator"), deleteTasks);
 
 // health routes
 router.get("/ping", ping);
