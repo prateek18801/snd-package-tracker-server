@@ -17,6 +17,11 @@ const PackageSchema = new Schema({
         required: true,
         enum: config.channel
     },
+    created_by: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "User"
+    },
     updated_by: {
         type: Schema.Types.ObjectId,
         required: true,
