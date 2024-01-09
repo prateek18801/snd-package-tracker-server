@@ -64,6 +64,7 @@ const postPackages = async (req, res, next) => {
         package_id: req.body.package_id,
         courier: req.body.courier,
         channel: req.body.channel,
+        created_by: req.user.sub,
         updated_by: req.user.sub,
         outgoing: {
             // update timestamp only if role >= administrator
@@ -73,12 +74,12 @@ const postPackages = async (req, res, next) => {
         }
     }
     try {
-        const sPackage = await new Package(data).save();
+        const spackage = await new Package(data).save();
         return res.status(201).set({
-            "location": `/v1/packages/${sPackage._id}`
+            "location": `/v1/packages/${spackage._id}`
         }).json({
             message: "package created",
-            data: sPackage
+            data: spackage
         });
     } catch (err) {
         next(err);
@@ -93,6 +94,7 @@ const patchPackages = async (req, res, next) => {
         // if return ? role >= executive : role >= administrator
         if (_return === "true") {
             update = {
+                updated_by: req.user.sub,
                 return: true,
                 incoming: {
                     timestamp: Date.now(),
@@ -118,13 +120,13 @@ const patchPackages = async (req, res, next) => {
                 }
             }   
         }
-        const uPackage = await Package.findOneAndUpdate({package_id: id}, update, { new: true })
+        const upackage = await Package.findOneAndUpdate({package_id: id}, update, { new: true })
             .select({ __v: 0 })
             .lean();
-        if (uPackage) {
+        if (upackage) {
             return res.status(200).json({
                 message: "package updated",
-                data: uPackage
+                data: upackage
             });
         }
         return res.status(400).json({
