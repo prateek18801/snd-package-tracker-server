@@ -37,6 +37,11 @@ const PackageSchema = new Schema({
             required: true,
             ref: "User"
         },
+        task: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: "Task"
+        },
         remarks: String
     },
     incoming: {
@@ -44,6 +49,11 @@ const PackageSchema = new Schema({
         executive: {
             type: Schema.Types.ObjectId,
             ref: "User"
+        },
+        task: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: "Task"
         },
         remarks: String
     },
