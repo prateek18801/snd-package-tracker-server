@@ -1,7 +1,60 @@
 import Task from "../model/task.js";
 
-const getTasks = (req, res, next) => {
+const getTasks = async (req, res, next) => {
+    // role >= executive
+    const id = req.params.id;
+    try {
+        if (id) {
+            // TODO - handle invalid ObjectId error
+            const tasks = await Task.findById(id).select({ __v: 0 }).lean();
+            return res.status(200).json({
+                data: tasks
+            });
+        }
 
+        const filter = {};
+        Object.keys(req.query).forEach(key => {
+            if (key !== "page" && key !== "limit") {
+                filter[key] = req.query[key];
+            }
+        });
+
+        const page = req.query.page ? Math.max(+req.query.page, 1) : 1;
+        const limit = req.query.limit ? Math.max(+req.query.limit, 1) : 1000;
+        const tasks = await Task.find(filter)
+            .select({ __v: 0 })
+            .skip((page - 1) * limit)
+            .limit(limit)
+            .sort({ createdAt: -1 })
+            .lean();
+
+        const total_count = await Task.estimatedDocumentCount();
+        const total_pages = Math.ceil(total_count / limit);
+        const prev_page = Math.max(page - 1, 1);
+        const next_page = Math.min(page + 1, total_pages);
+
+        return res.status(200).set({
+            "x-total-count": total_count,
+            "link": `</v1/tasks?page=${page}&per_page=${limit}>;rel="self",</v1/tasks?page=${next_page}&per_page=${limit}>;rel="next",</v1/tasks?page=${prev_page}&per_page=${limit}>;rel="previous",</v1/tasks?page=1&per_page=${limit}>;rel="first",</v1/tasks?page=${total_pages}&per_page=${limit}>;rel="last",`
+        }).json({
+            metadata: {
+                page,
+                limit,
+                total_count,
+                total_pages,
+                links: {
+                    self: `/v1/tasks?page=${page}&per_page=${limit}`,
+                    next: `/v1/tasks?page=${next_page}&per_page=${limit}`,
+                    prev: `/v1/tasks?page=${prev_page}&per_page=${limit}`,
+                    first: `/v1/tasks?page=1&per_page=${limit}`,
+                    last: `/v1/tasks?page=${total_pages}&per_page=${limit}`
+                }
+            },
+            data: tasks
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
 const postTasks = async (req, res, next) => {
