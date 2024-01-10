@@ -60,7 +60,8 @@ const getTasks = async (req, res, next) => {
 const postTasks = async (req, res, next) => {
     // role >= executive
     const data = {
-        task_id: req.body.task_id,
+        // TODO - generate task_id
+        task_id: req.body.task_id, 
         type: req.body.type,
         courier: req.body.courier,
         channel: req.body.channel,
@@ -80,12 +81,43 @@ const postTasks = async (req, res, next) => {
     }
 }
 
-const patchTasks = (req, res, next) => {
-
+const patchTasks = async (req, res, next) => {
+    const id = req.params.id;
+    const update = {
+        type: req.body.type,
+        status: req.body.status,
+        courier: req.body.courier,
+        channel: req.body.channel,
+        updated_by: req.user.sub
+    }
+    try {
+        const task = await Task.findByIdAndUpdate(id, update, { new: true })
+            .select({ __v: 0 })
+            .lean();
+        if (task) {
+            return res.status(200).json({
+                message: "task updated",
+                data: task
+            });
+        }
+        return res.status(400).json({
+            message: "task not found"
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
-const deleteTasks = (req, res, next) => {
-
+const deleteTasks = async (req, res, next) => {
+    // role >= administrator
+    const id = req.params.id;
+    try {
+        // TODO - handle invalid ObjectId error
+        await Task.findByIdAndDelete(id);
+        return res.status(204).json();
+    } catch (err) {
+        next(err);
+    }
 }
 
 export {
