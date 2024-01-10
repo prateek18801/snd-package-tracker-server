@@ -1,4 +1,5 @@
 import Task from "../model/task.js";
+import Package from "../model/package.js";
 
 const getTasks = async (req, res, next) => {
     // role >= executive
@@ -113,7 +114,9 @@ const deleteTasks = async (req, res, next) => {
     const id = req.params.id;
     try {
         // TODO - handle invalid ObjectId error
-        await Task.findByIdAndDelete(id);
+        // cascade delete for packages
+        const task = await Task.findByIdAndDelete(id);
+        await Package.deleteMany({_id: {$in: task.packages}})
         return res.status(204).json();
     } catch (err) {
         next(err);
