@@ -52,7 +52,6 @@ const PackageSchema = new Schema({
         },
         task: {
             type: Schema.Types.ObjectId,
-            required: true,
             ref: "Task"
         },
         remarks: String
