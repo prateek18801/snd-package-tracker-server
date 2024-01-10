@@ -61,20 +61,6 @@ const getPackages = async (req, res, next) => {
 
 const postPackages = async (req, res, next) => {
     // role >= executive
-    const data = {
-        package_id: req.body.package_id,
-        courier: req.body.courier,
-        channel: req.body.channel,
-        created_by: req.user.sub,
-        updated_by: req.user.sub,
-        outgoing: {
-            // update timestamp only if role >= administrator
-            timestamp: isOver(req.user.role, "executive") ? (req.body.timestamp || Date.now()) : Date.now(),
-            executive: req.user.sub,
-            task: req.body.task_id,
-            remarks: req.body.remarks
-        }
-    }
     try {
         const task = await Task.findById(req.body.task_id);
         if (!task) {
@@ -87,8 +73,24 @@ const postPackages = async (req, res, next) => {
                 message: "task closed"
             });
         }
+
+        const data = {
+            package_id: req.body.package_id,
+            courier: task.courier,
+            channel: task.channel,
+            created_by: req.user.sub,
+            updated_by: req.user.sub,
+            outgoing: {
+                // update timestamp only if role >= administrator
+                timestamp: isOver(req.user.role, "executive") ? (req.body.timestamp || Date.now()) : Date.now(),
+                executive: req.user.sub,
+                task: task._id,
+                remarks: req.body.remarks
+            }
+        }
+
         const spackage = await new Package(data).save();
-        task.packages.push(req.body.task_id);
+        task.packages.push(spackage._id);
         await task.save();
 
         return res.status(201).set({
