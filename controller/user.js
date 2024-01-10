@@ -43,7 +43,7 @@ const getUsers = async (req, res, next) => {
 
         return res.status(200).set({
             "x-total-count": total_count,
-            "link": `</v1/users?page=${page}&per_page=${limit}>;rel="self",</v1/users?page=${next_page}&per_page=${limit}>;rel="next",</v1/users?page=${prev_page}&per_page=${limit}>;rel="previous",</v1/users?page=0&per_page=${limit}>;rel="first",</v1/users?page=${total_pages}&per_page=${limit}>;rel="last",`
+            "link": `</v1/users?page=${page}&per_page=${limit}>;rel="self",</v1/users?page=${next_page}&per_page=${limit}>;rel="next",</v1/users?page=${prev_page}&per_page=${limit}>;rel="previous",</v1/users?page=1&per_page=${limit}>;rel="first",</v1/users?page=${total_pages}&per_page=${limit}>;rel="last",`
         }).json({
             metadata: {
                 page,
@@ -54,7 +54,7 @@ const getUsers = async (req, res, next) => {
                     self: `/v1/users?page=${page}&per_page=${limit}`,
                     next: `/v1/users?page=${next_page}&per_page=${limit}`,
                     prev: `/v1/users?page=${prev_page}&per_page=${limit}`,
-                    first: `/v1/users?page=0&per_page=${limit}`,
+                    first: `/v1/users?page=1&per_page=${limit}`,
                     last: `/v1/users?page=${total_pages}&per_page=${limit}`
                 }
             },
