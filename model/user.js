@@ -22,6 +22,10 @@ const UserSchema = new Schema({
         type: String,
         enum: config.role,
         default: config.role[0]
+    },
+    archived: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: {
@@ -30,9 +34,9 @@ const UserSchema = new Schema({
     }
 });
 
-UserSchema.pre('save', async function (next) {
+UserSchema.pre("save", async function (next) {
     // check if the password is modified
-    if (this.isModified('password')) {
+    if (this.isModified("password")) {
         // hash the new password
         this.password = await hash(this.password, 10)
     }
