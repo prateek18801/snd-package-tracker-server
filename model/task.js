@@ -27,6 +27,8 @@ const TaskSchema = new Schema({
         required: true,
         enum: config.channel
     },
+    vehicle: String,
+    delivery_executive: String,
     packages: [{
         type: Schema.Types.ObjectId,
         ref: "Package"
