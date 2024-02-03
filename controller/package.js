@@ -64,7 +64,7 @@ const postPackages = async (req, res, next) => {
     try {
         const task = await Task.findById(req.body.task_id);
         if (!task) {
-            return res.status(400).json({
+            return res.status(404).json({
                 message: "task not found"
             });
         }
@@ -80,6 +80,7 @@ const postPackages = async (req, res, next) => {
             channel: task.channel,
             created_by: req.user.sub,
             updated_by: req.user.sub,
+            status: req.body.status,
             outgoing: {
                 // update timestamp only if role >= administrator
                 timestamp: isOver(req.user.role, "executive") ? (req.body.timestamp || Date.now()) : Date.now(),
@@ -109,11 +110,25 @@ const patchPackages = async (req, res, next) => {
     const _return = req.query.return;
     let update = {};
     try {
+        const task = await Task.findById(req.body.task_id);
+        if (!task) {
+            return res.status(404).json({
+                message: "task not found"
+            });
+        }
+        if (task.status === "closed") {
+            return res.status(400).json({
+                message: "task closed"
+            });
+        }
+
+
         // if return ? role >= executive : role >= administrator
         if (_return === "true") {
+            // and status !== cancel
             update = {
                 updated_by: req.user.sub,
-                return: true,
+                status: "return",
                 incoming: {
                     timestamp: Date.now(),
                     executive: req.user.sub,
@@ -132,6 +147,7 @@ const patchPackages = async (req, res, next) => {
                 courier: req.body.courier,
                 channel: req.body.channel,
                 updated_by: req.user.sub,
+                status: req.body.status,
                 outgoing: {
                     timestamp: isOver(req.user.role, "executive") ? (req.body.timestamp || Date.now()) : Date.now(),
                     executive: req.user.sub,
@@ -144,6 +160,8 @@ const patchPackages = async (req, res, next) => {
             .select({ __v: 0 })
             .lean();
         if (upackage) {
+            task.packages.push(upackage._id);
+            await task.save();
             return res.status(200).json({
                 message: "package updated",
                 data: upackage
