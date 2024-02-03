@@ -4,13 +4,12 @@ import Package from "../model/package.js";
 const getTasks = async (req, res, next) => {
     // role >= executive
     const id = req.params.id;
+    const { fields } = req.query;
     try {
         if (id) {
             // TODO - handle invalid ObjectId error
-            const tasks = await Task.findById(id).select({ __v: 0 }).lean();
-            return res.status(200).json({
-                data: tasks
-            });
+            const tasks = await Task.findById(id).select({ __v: 0 }).lean().populate("packages", fields?.replace(/,/g, " "));
+            return res.status(200).json(tasks);
         }
 
         const filter = {};
@@ -72,7 +71,7 @@ const postTasks = async (req, res, next) => {
     try {
         const task = await new Task(data).save();
         return res.status(201).set({
-            "location": `/v1/packages/${task._id}`
+            "location": `/v1/tasks/${task._id}`
         }).json({
             message: "task created",
             data: task
@@ -116,7 +115,7 @@ const deleteTasks = async (req, res, next) => {
         // TODO - handle invalid ObjectId error
         // cascade delete for packages
         const task = await Task.findByIdAndDelete(id);
-        await Package.deleteMany({_id: {$in: task.packages}})
+        await Package.deleteMany({ _id: { $in: task.packages } })
         return res.status(204).json();
     } catch (err) {
         next(err);
