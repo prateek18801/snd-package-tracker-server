@@ -85,17 +85,14 @@ const patchUsers = async (req, res, next) => {
     try {
         // TODO - handle invalid ObjectId error
         // TODO - validate request body
-        const user = await User.findByIdAndUpdate(id, req.body, { new: true })
-            .select({
-                __v: 0,
-                password: 0
-            })
-            .lean();
+        const user = await User.findById(id);
+        Object.keys(req.body).forEach(key => user[key] = req.body[key]);
+        const { password, __v, ...updated } = (await user.save()).toObject();
 
         if (user) {
             return res.status(200).json({
                 message: "user updated",
-                data: user
+                data: updated
             });
         }
 
