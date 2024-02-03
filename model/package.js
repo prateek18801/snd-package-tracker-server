@@ -17,15 +17,10 @@ const PackageSchema = new Schema({
         required: true,
         enum: config.channel
     },
-    created_by: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: "User"
-    },
-    updated_by: {
-        type: Schema.Types.ObjectId,
-        required: true,
-        ref: "User"
+    status: {
+        type: String,
+        default: "dispach",
+        enum: ["dispatch", "return", "cancel"]
     },
     outgoing: {
         timestamp: {
@@ -56,10 +51,16 @@ const PackageSchema = new Schema({
         },
         remarks: String
     },
-    return: {
-        type: String,
-        default: false
-    }
+    created_by: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "User"
+    },
+    updated_by: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "User"
+    },
 }, {
     timestamps: {
         createdAt: "created_at",
