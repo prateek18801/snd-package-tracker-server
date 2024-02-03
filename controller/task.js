@@ -68,6 +68,8 @@ const postTasks = async (req, res, next) => {
             courier: req.body.courier,
             channel: req.body.channel,
             status: req.body.status,
+            vehicle: req.body.vehicle,
+            delivery_executive: req.body.delivery_executive,
             created_by: req.user.sub,
             updated_by: req.user.sub
         }
@@ -90,6 +92,8 @@ const patchTasks = async (req, res, next) => {
         status: req.body.status,
         courier: req.body.courier,
         channel: req.body.channel,
+        vehicle: req.body.vehicle,
+        delivery_executive: req.body.delivery_executive,
         updated_by: req.user.sub
     }
     try {
