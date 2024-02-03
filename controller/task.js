@@ -59,16 +59,18 @@ const getTasks = async (req, res, next) => {
 
 const postTasks = async (req, res, next) => {
     // role >= executive
-    const data = {
-        // TODO - generate task_id
-        task_id: req.body.task_id, 
-        type: req.body.type,
-        courier: req.body.courier,
-        channel: req.body.channel,
-        created_by: req.user.sub,
-        updated_by: req.user.sub
-    }
     try {
+        const { task_id, ..._ } = (await Task.findOne({}).sort({ "created_at": -1 })) || { task_id: 0 };
+        const data = {
+            // TODO - generate task_id
+            task_id: ("000" + (+task_id + 1)).slice(-4),
+            type: req.body.type,
+            courier: req.body.courier,
+            channel: req.body.channel,
+            status: req.body.status,
+            created_by: req.user.sub,
+            updated_by: req.user.sub
+        }
         const task = await new Task(data).save();
         return res.status(201).set({
             "location": `/v1/tasks/${task._id}`
