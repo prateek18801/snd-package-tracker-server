@@ -20,6 +20,7 @@ import {
 } from "../controller/task.js";
 import { postLogin } from "../controller/auth.js";
 import { ping, health } from "../controller/health.js";
+import { getConfig, postConfig } from "../controller/config.js";
 
 const router = Router();
 
@@ -43,6 +44,10 @@ router.get("/v1/tasks/:id?", auth("executive"), getTasks);
 router.post("/v1/tasks", auth("executive"), postTasks);
 router.patch("/v1/tasks/:id", auth("executive"), patchTasks);
 router.delete("/v1/tasks/:id", auth("administrator"), deleteTasks);
+
+// config routes
+router.get("/v1/config/:title?", getConfig);
+router.post("/v1/config/:title", postConfig);
 
 // health routes
 router.get("/ping", ping);
