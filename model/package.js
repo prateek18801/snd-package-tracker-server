@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose";
-import config from "../utils/config.js";
 
 const PackageSchema = new Schema({
     package_id: {
@@ -9,13 +8,11 @@ const PackageSchema = new Schema({
     },
     courier: {
         type: String,
-        required: true,
-        enum: config.courier
+        required: true
     },
     channel: {
         type: String,
-        required: true,
-        enum: config.channel
+        required: true
     },
     status: {
         type: String,

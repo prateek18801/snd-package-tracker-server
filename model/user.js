@@ -1,6 +1,5 @@
 import { Schema, model } from "mongoose";
 import { hash, compare } from "bcrypt";
-import config from "../utils/config.js";
 
 const UserSchema = new Schema({
     name: {
@@ -20,8 +19,8 @@ const UserSchema = new Schema({
     },
     role: {
         type: String,
-        enum: config.role,
-        default: config.role[0]
+        enum: ["executive", "administrator", "manager", "root"],
+        default: "executive"
     },
     archived: {
         type: Boolean,

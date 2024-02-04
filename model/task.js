@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose";
-import config from "../utils/config.js";
 
 const TaskSchema = new Schema({
     task_id: {
@@ -19,13 +18,11 @@ const TaskSchema = new Schema({
     },
     courier: {
         type: String,
-        required: true,
-        enum: config.courier
+        required: true
     },
     channel: {
         type: String,
-        required: true,
-        enum: config.channel
+        required: true
     },
     vehicle: String,
     delivery_executive: String,
