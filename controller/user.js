@@ -1,22 +1,24 @@
+import { isValidObjectId } from "mongoose";
 import User from "../model/user.js";
 
 const getUsers = async (req, res, next) => {
-    const id = req.params.id;
     try {
-        if (id) {
-            // TODO - handle invalid ObjectId error
-            const user = await User.findById(id)
-                .select({
-                    __v: 0,
-                    password: 0
-                })
+        if (req.params.id) {
+            if (!isValidObjectId(req.params.id)) {
+                const error = new Error("invalid id");
+                error.status = 400;
+                throw error;
+            }
+            const user = await User.findById(req.params.id)
+                .select({ password: 0 })
                 .lean();
-
             return res.status(200).json({
+                message: "user found",
                 data: user
             });
         }
 
+        // create filter for requested fields
         const filter = {};
         Object.keys(req.query).forEach(key => {
             if (key !== "page" && key !== "limit") {
@@ -27,10 +29,7 @@ const getUsers = async (req, res, next) => {
         const page = req.query.page ? Math.max(+req.query.page, 1) : 1;
         const limit = req.query.limit ? Math.max(+req.query.limit, 1) : 1000;
         const user = await User.find(filter)
-            .select({
-                __v: 0,
-                password: 0
-            })
+            .select({ password: 0 })
             .skip((page - 1) * limit)
             .limit(limit)
             .sort({ createdAt: -1 })
@@ -67,48 +66,71 @@ const getUsers = async (req, res, next) => {
 
 const postUsers = async (req, res, next) => {
     try {
-        // TODO - validate request body
-        const { password, __v, ...user } = (await new User(req.body).save()).toObject();
-        return res.status(201).set({
-            "location": `/v1/users/${user._id}`
-        }).json({
-            message: "user created",
-            data: user
+        const data = {
+            name: req.body.name,
+            username: req.body.username,
+            password: req.body.password,
+            role: req.body.role ? req.body.role.toLowerCase() : "executive",
+        }
+        // validate required fields
+        Object.keys(data).forEach(key => {
+            if (!data[key]) {
+                const error = new Error(`missing ${key} field`);
+                error.status = 400;
+                throw error;
+            }
         });
+        const user = await new User(data).save();
+        return res.status(201)
+            .set({
+                "location": `/v1/users/${user._id}`
+            })
+            .json({
+                message: "user created",
+                data: {
+                    name: user.name,
+                    role: user.role,
+                    username: user.username
+                }
+            });
     } catch (err) {
         next(err);
     }
 }
 
 const patchUsers = async (req, res, next) => {
-    const id = req.params.id;
     try {
-        // TODO - handle invalid ObjectId error
-        // TODO - validate request body
+        if (!isValidObjectId(req.params.id)) {
+            const error = new Error("invalid id");
+            error.status = 400;
+            throw error;
+        }
         const user = await User.findById(id);
-        Object.keys(req.body).forEach(key => user[key] = req.body[key]);
-        const { password, __v, ...updated } = (await user.save()).toObject();
-
-        if (user) {
-            return res.status(200).json({
-                message: "user updated",
-                data: updated
+        if (!user) {
+            return res.status(400).json({
+                message: "user not found"
             });
         }
-
-        return res.status(400).json({
-            message: "user not found"
+        Object.keys(req.body).forEach(key => user[key] = req.body[key]);
+        const { password, __v, ...updated } = (await user.save()).toObject();
+        return res.status(200).json({
+            message: "user updated",
+            data: updated
         });
     } catch (err) {
         next(err);
     }
 }
 
+
 const deleteUsers = async (req, res, next) => {
-    const id = req.params.id;
     try {
-        // TODO - handle invalid ObjectId error
-        await User.findByIdAndDelete(id);
+        if (!isValidObjectId(req.params.id)) {
+            const error = new Error("invalid id");
+            error.status = 400;
+            throw error;
+        }
+        await User.findByIdAndDelete(req.params.id);
         return res.status(204).json();
     } catch (err) {
         next(err);
@@ -119,5 +141,6 @@ export {
     getUsers,
     postUsers,
     patchUsers,
-    deleteUsers
+    deleteUsers,
+    archiveUsers
 };
