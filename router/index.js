@@ -21,6 +21,7 @@ import {
 import { postLogin } from "../controller/auth.js";
 import { ping, health } from "../controller/health.js";
 import { getConfig, postConfig } from "../controller/config.js";
+import { getPackageReport, getTaskReport } from "../controller/report.js";
 
 const router = Router();
 
@@ -48,6 +49,10 @@ router.delete("/v1/tasks/:id", auth("administrator"), deleteTasks);
 // config routes
 router.get("/v1/config/:title?", getConfig);
 router.post("/v1/config/:title", postConfig);
+
+// report routes
+router.get("/v1/report/tasks", getTaskReport);
+router.get("/v1/report/packages", getPackageReport);
 
 // health routes
 router.get("/ping", ping);
