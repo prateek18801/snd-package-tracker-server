@@ -16,8 +16,8 @@ const PackageSchema = new Schema({
     },
     type: {
         type: String,
-        enum: ["outgoing", "incoming"],
-        default: "outgoing"
+        required: true,
+        enum: ["outgoing", "incoming"]
     },
     cancelled: {
         type: Boolean,
