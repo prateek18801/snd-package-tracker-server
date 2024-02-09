@@ -12,10 +12,7 @@ const getUsers = async (req, res, next) => {
             const user = await User.findOne({ id: req.params.id, archived: false })
                 .select({ password: 0 })
                 .lean();
-            return res.status(200).json({
-                message: "user found",
-                data: user
-            });
+            return res.status(200).json(user);
         }
 
         // create filter for requested fields
@@ -28,11 +25,11 @@ const getUsers = async (req, res, next) => {
 
         const page = req.query.page ? Math.max(+req.query.page, 1) : 1;
         const limit = req.query.limit ? Math.max(+req.query.limit, 1) : 1000;
-        const user = await User.find(filter)
+        const users = await User.find(filter)
             .select({ password: 0 })
             .skip((page - 1) * limit)
             .limit(limit)
-            .sort({ createdAt: -1 })
+            .sort({ created_at: -1 })
             .lean();
 
         const total_count = await User.estimatedDocumentCount();
@@ -57,7 +54,7 @@ const getUsers = async (req, res, next) => {
                     last: `/v1/users?page=${total_pages}&per_page=${limit}`
                 }
             },
-            data: user
+            data: users
         });
     } catch (err) {
         next(err);
@@ -105,17 +102,21 @@ const patchUsers = async (req, res, next) => {
             error.status = 400;
             throw error;
         }
-        const user = await User.findById(id);
+        const user = await User.findById(req.params.id);
         if (!user) {
             return res.status(400).json({
                 message: "user not found"
             });
         }
         Object.keys(req.body).forEach(key => user[key] = req.body[key]);
-        const { password, __v, ...updated } = (await user.save()).toObject();
+        const updated = await user.save();
         return res.status(200).json({
             message: "user updated",
-            data: updated
+            data: {
+                name: updated.name,
+                role: updated.role,
+                username: updated.username
+            }
         });
     } catch (err) {
         next(err);
