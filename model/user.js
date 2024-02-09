@@ -19,7 +19,7 @@ const UserSchema = new Schema({
     },
     role: {
         type: String,
-        enum: ["executive", "administrator", "manager", "root"],
+        enum: ["executive", "admin", "manager", "root"],
         default: "executive"
     },
     archived: {
