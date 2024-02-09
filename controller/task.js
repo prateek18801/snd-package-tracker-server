@@ -1,17 +1,24 @@
+import { isValidObjectId } from "mongoose";
 import Task from "../model/task.js";
 import Package from "../model/package.js";
 
 const getTasks = async (req, res, next) => {
     // role >= executive
-    const id = req.params.id;
     const { fields } = req.query;
     try {
-        if (id) {
-            // TODO - handle invalid ObjectId error
-            const tasks = await Task.findById(id).select({ __v: 0 }).lean().populate("packages", fields?.replace(/,/g, " "));
-            return res.status(200).json(tasks);
+        if (req.params.id) {
+            if (!isValidObjectId(req.params.id)) {
+                const error = new Error("invalid id");
+                error.status = 400;
+                throw error;
+            }
+            const task = await Task.findById(req.params.id)
+                .populate("packages", fields?.replace(/,/g, " "))
+                .lean();
+            return res.status(200).json(task);
         }
 
+        // create filter for requested fields
         const filter = {};
         Object.keys(req.query).forEach(key => {
             if (key !== "page" && key !== "limit") {
@@ -22,10 +29,9 @@ const getTasks = async (req, res, next) => {
         const page = req.query.page ? Math.max(+req.query.page, 1) : 1;
         const limit = req.query.limit ? Math.max(+req.query.limit, 1) : 1000;
         const tasks = await Task.find(filter)
-            .select({ __v: 0 })
             .skip((page - 1) * limit)
             .limit(limit)
-            .sort({ createdAt: -1 })
+            .sort({ created_at: -1 })
             .lean();
 
         const total_count = await Task.estimatedDocumentCount();
@@ -65,45 +71,52 @@ const postTasks = async (req, res, next) => {
             // TODO - generate task_id
             task_id: ("000" + (+task_id + 1)).slice(-4),
             type: req.body.type,
+            is_open: req.body.is_open,
             courier: req.body.courier,
             channel: req.body.channel,
-            status: req.body.status,
-            vehicle: req.body.vehicle,
-            delivery_executive: req.body.delivery_executive,
+            vehicle_no: req.body.vehicle_no?.toUpperCase() ?? undefined,
+            delex_name: req.body.delex_name,
+            delex_contact: req.body.delex_contact,
             created_by: req.user.sub,
             updated_by: req.user.sub
         }
         const task = await new Task(data).save();
-        return res.status(201).set({
-            "location": `/v1/tasks/${task._id}`
-        }).json({
-            message: "task created",
-            data: task
-        });
+        return res.status(201)
+            .set({
+                "location": `/v1/tasks/${task._id}`
+            })
+            .json({
+                message: "task created",
+                data: task
+            });
     } catch (err) {
         next(err);
     }
 }
 
 const patchTasks = async (req, res, next) => {
-    const id = req.params.id;
+    // role >= admin
     const update = {
         type: req.body.type,
-        status: req.body.status,
+        is_open: req.body.is_open,
         courier: req.body.courier,
         channel: req.body.channel,
-        vehicle: req.body.vehicle,
-        delivery_executive: req.body.delivery_executive,
+        vehicle_no: req.body.vehicle_no?.toUpperCase() ?? undefined,
+        delex_name: req.body.delex_name,
+        delex_contact: req.body.delex_contact,
         updated_by: req.user.sub
     }
     try {
-        const task = await Task.findByIdAndUpdate(id, update, { new: true })
-            .select({ __v: 0 })
-            .lean();
-        if (task) {
+        if (!isValidObjectId(req.params.id)) {
+            const error = new Error("invalid id");
+            error.status = 400;
+            throw error;
+        }
+        const updated = await Task.findByIdAndUpdate(req.params.id, update, { new: true }).lean();
+        if (updated) {
             return res.status(200).json({
                 message: "task updated",
-                data: task
+                data: updated
             });
         }
         return res.status(400).json({
@@ -115,13 +128,16 @@ const patchTasks = async (req, res, next) => {
 }
 
 const deleteTasks = async (req, res, next) => {
-    // role >= administrator
-    const id = req.params.id;
+    // role >= admin
     try {
-        // TODO - handle invalid ObjectId error
-        // cascade delete for packages
-        const task = await Task.findByIdAndDelete(id);
-        await Package.deleteMany({ _id: { $in: task.packages } })
+        if (!isValidObjectId(req.params.id)) {
+            const error = new Error("invalid id");
+            error.status = 400;
+            throw error;
+        }
+        const task = await Task.findByIdAndDelete(req.params.id);
+        // cascade delete all pacakges
+        await Package.deleteMany({ _id: { $in: task.packages } });
         return res.status(204).json();
     } catch (err) {
         next(err);
