@@ -4,7 +4,8 @@ import {
     getUsers,
     postUsers,
     patchUsers,
-    deleteUsers
+    deleteUsers,
+    archiveUsers
 } from "../controller/user.js";
 import {
     getPackages,
@@ -32,7 +33,8 @@ router.post("/v1/login", postLogin);
 router.get("/v1/users/:id?", auth("administrator"), getUsers);
 router.post("/v1/users", auth("manager"), postUsers);
 router.patch("/v1/users/:id", auth("manager"), patchUsers);
-router.delete("/v1/users/:id", auth("manager"), deleteUsers);
+router.delete("/v1/users/:id", auth("manager"), archiveUsers);
+router.delete("/v1/users/:id/hard", auth("root"), deleteUsers);
 
 // package routes
 router.get("/v1/packages/:id?", auth("executive"), getPackages);
