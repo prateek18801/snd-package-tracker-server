@@ -11,10 +11,9 @@ const TaskSchema = new Schema({
         required: true,
         enum: ["incoming", "outgoing"]
     },
-    status: {
-        type: String,
-        default: "open",
-        enum: ["open", "closed"]
+    is_open: {
+        type: Boolean,
+        default: true
     },
     courier: {
         type: String,
@@ -24,8 +23,6 @@ const TaskSchema = new Schema({
         type: String,
         required: true
     },
-    vehicle: String,
-    delivery_executive: String,
     packages: [{
         type: Schema.Types.ObjectId,
         ref: "Package"
@@ -40,7 +37,9 @@ const TaskSchema = new Schema({
         required: true,
         ref: "User"
     },
-    closed_at: Date
+    vehicle_no: String,
+    delex_name: String,
+    delex_contact: String
 }, {
     timestamps: {
         createdAt: "created_at",
