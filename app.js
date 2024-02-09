@@ -11,12 +11,13 @@ app.use(router);
 
 app.use((err, req, res, next) => {
     return res.status(err.status || 500).json({
-        message: err.message,
-        error: err.cause || "internal server error"
+        error: true,
+        cause: err.cause,
+        message: err.message || "internal server error"
     });
 });
 
 app.listen(process.env.PORT, () => {
-    console.log("🟢 server started");
+    console.log("✅ server started");
     db.connect();
 });
