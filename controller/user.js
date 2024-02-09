@@ -9,7 +9,7 @@ const getUsers = async (req, res, next) => {
                 error.status = 400;
                 throw error;
             }
-            const user = await User.findById(req.params.id)
+            const user = await User.findOne({ id: req.params.id, archived: false })
                 .select({ password: 0 })
                 .lean();
             return res.status(200).json({
@@ -19,7 +19,7 @@ const getUsers = async (req, res, next) => {
         }
 
         // create filter for requested fields
-        const filter = {};
+        const filter = { archived: false };
         Object.keys(req.query).forEach(key => {
             if (key !== "page" && key !== "limit") {
                 filter[key] = req.query[key];
