@@ -1,19 +1,16 @@
+import { isValidObjectId } from "mongoose";
 import Package from "../model/package.js";
 import Task from "../model/task.js";
-import { isUnder, isOver } from "../utils/authorization.js";
 
 const getPackages = async (req, res, next) => {
     // role >= executive
-    const id = req.params.id;
     try {
-        if (id) {
-            // TODO - handle invalid ObjectId error
-            const spackage = await Package.findById(id).select({ __v: 0 }).lean();
-            return res.status(200).json({
-                data: spackage
-            });
+        if (req.params.id) {
+            const pcg = await Package.findOne({ package_id: req.params.id }).lean();
+            return res.status(200).json(pcg);
         }
 
+        // create filter for requested fields
         const filter = {};
         Object.keys(req.query).forEach(key => {
             if (key !== "page" && key !== "limit") {
@@ -23,11 +20,10 @@ const getPackages = async (req, res, next) => {
 
         const page = req.query.page ? Math.max(+req.query.page, 1) : 1;
         const limit = req.query.limit ? Math.max(+req.query.limit, 1) : 1000;
-        const spackage = await Package.find(filter)
-            .select({ __v: 0 })
+        const pcgs = await Package.find(filter)
             .skip((page - 1) * limit)
             .limit(limit)
-            .sort({ createdAt: -1 })
+            .sort({ created_at: -1 })
             .lean();
 
         const total_count = await Package.estimatedDocumentCount();
@@ -52,7 +48,7 @@ const getPackages = async (req, res, next) => {
                     last: `/v1/packages?page=${total_pages}&per_page=${limit}`
                 }
             },
-            data: spackage
+            data: pcgs
         });
     } catch (err) {
         next(err);
@@ -62,109 +58,77 @@ const getPackages = async (req, res, next) => {
 const postPackages = async (req, res, next) => {
     // role >= executive
     try {
+        if (!isValidObjectId(req.body.task_id)) {
+            const error = new Error("invalid task id");
+            error.status = 400;
+            throw error;
+        }
         const task = await Task.findById(req.body.task_id);
-        if (!task) {
-            return res.status(404).json({
-                message: "task not found"
-            });
-        }
-        if (task.status === "closed") {
-            return res.status(400).json({
-                message: "task closed"
-            });
-        }
+        if (!task) return res.status(404).json({
+            message: "task not found"
+        });
+        if (!task.is_open) return res.status(400).json({
+            message: "task closed"
+        });
 
         const data = {
             package_id: req.body.package_id,
             courier: task.courier,
             channel: task.channel,
-            created_by: req.user.sub,
-            updated_by: req.user.sub,
-            status: req.body.status,
-            outgoing: {
-                // update timestamp only if role >= administrator
-                timestamp: isOver(req.user.role, "executive") ? (req.body.timestamp || Date.now()) : Date.now(),
-                executive: req.user.sub,
-                task: task._id,
-                remarks: req.body.remarks
-            }
+            type: task.type,
+            cancelled: req.body.cancelled,
+            executive: req.user.sub,
+            task: task._id,
+            remarks: req.body.remarks
         }
 
-        const spackage = await new Package(data).save();
-        task.packages.push(spackage._id);
+        // update remarks in case of re-scan
+        const saved = await Package.findOne({ package_id: data.package_id });
+        if (saved) {
+            saved.remarks = req.body.remarks;
+            await saved.save();
+            return res.status(200).json({
+                message: "package updated",
+                data: saved
+            });
+        }
+
+        const pcg = await new Package(data).save();
+        // update packages list in task
+        task.packages.push(pcg._id);
         await task.save();
 
-        return res.status(201).set({
-            "location": `/v1/packages/${spackage._id}`
-        }).json({
-            message: "package created",
-            data: spackage
-        });
+        return res.status(201)
+            .set({
+                "location": `/v1/packages/${pcg._id}`
+            })
+            .json({
+                message: "package created",
+                data: pcg
+            });
     } catch (err) {
         next(err);
     }
 }
 
 const patchPackages = async (req, res, next) => {
-    const id = req.params.id;
-    const _return = req.query.return;
-    let update = {};
+    // role >= executive
+    const update = {
+        package_id: req.body.package_id,
+        cancelled: req.body.cancelled,
+        remarks: req.body.remarks
+    }
     try {
-        const task = await Task.findById(req.body.task_id);
-        if (!task) {
-            return res.status(404).json({
-                message: "task not found"
-            });
+        if (!isValidObjectId(req.params.id)) {
+            const error = new Error("invalid id");
+            error.status = 400;
+            throw error;
         }
-        if (task.status === "closed") {
-            return res.status(400).json({
-                message: "task closed"
-            });
-        }
-
-
-        // if return ? role >= executive : role >= administrator
-        if (_return === "true") {
-            // and status !== cancel
-            update = {
-                updated_by: req.user.sub,
-                status: "return",
-                incoming: {
-                    timestamp: Date.now(),
-                    executive: req.user.sub,
-                    task: req.body.task_id,
-                    remarks: req.body.remarks
-                }
-            }
-        } else {
-            if (isUnder(req.user.role, "administrator")) {
-                return res.status(403).json({
-                    message: "forbidden"
-                });
-            }
-            update = {
-                package_id: req.body.package_id,
-                courier: req.body.courier,
-                channel: req.body.channel,
-                updated_by: req.user.sub,
-                status: req.body.status,
-                outgoing: {
-                    timestamp: isOver(req.user.role, "executive") ? (req.body.timestamp || Date.now()) : Date.now(),
-                    executive: req.user.sub,
-                    task: req.body.task_id,
-                    remarks: req.body.remarks
-                }
-            }
-        }
-        const upackage = await Package.findOneAndUpdate({ package_id: id }, update, { new: true })
-            .select({ __v: 0 })
-            .lean();
-        if (upackage) {
-            task.packages.push(upackage._id);
-            await task.save();
+        const updated = await Package.findByIdAndUpdate(req.params.id, update, { new: true }).lean();
+        if (updated) {
             return res.status(200).json({
                 message: "package updated",
-                data: upackage
+                data: updated
             });
         }
         return res.status(400).json({
@@ -176,11 +140,21 @@ const patchPackages = async (req, res, next) => {
 }
 
 const deletePackages = async (req, res, next) => {
-    // role >= administrator
-    const id = req.params.id;
+    // role >= admin
     try {
-        // TODO - handle invalid ObjectId error
-        await Package.findByIdAndDelete(id);
+        if (!isValidObjectId(req.params.id)) {
+            const error = new Error("invalid id");
+            error.status = 400;
+            throw error;
+        }
+        const pcg = await Package.findByIdAndDelete(req.params.id);
+        // find corresponding task remove package_id
+        const task = await Task.findById(pcg.task);
+        const packageIndex = task.packages.findIndex(package_id => package_id.toString() === pcg._id.toString());
+        if (packageIndex !== -1) {
+            task.packages.splice(packageIndex, 1);
+            await task.save();
+        }
         return res.status(204).json();
     } catch (err) {
         next(err);
