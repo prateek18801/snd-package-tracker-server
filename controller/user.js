@@ -122,6 +122,19 @@ const patchUsers = async (req, res, next) => {
     }
 }
 
+const archiveUsers = async (req, res, next) => {
+    try {
+        if (!isValidObjectId(req.params.id)) {
+            const error = new Error("invalid id");
+            error.status = 400;
+            throw error;
+        }
+        await User.findByIdAndUpdate(req.params.id, { archived: true });
+        return res.status(204).json();
+    } catch (err) {
+        next(err);
+    }
+}
 
 const deleteUsers = async (req, res, next) => {
     try {
