@@ -14,50 +14,26 @@ const PackageSchema = new Schema({
         type: String,
         required: true
     },
-    status: {
+    type: {
         type: String,
-        default: "dispach",
-        enum: ["dispatch", "return", "cancel"]
+        enum: ["outgoing", "incoming"],
+        default: "outgoing"
     },
-    outgoing: {
-        timestamp: {
-            type: Date,
-            default: Date.now
-        },
-        executive: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: "User"
-        },
-        task: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            ref: "Task"
-        },
-        remarks: String
+    cancelled: {
+        type: Boolean,
+        default: false
     },
-    incoming: {
-        timestamp: Date,
-        executive: {
-            type: Schema.Types.ObjectId,
-            ref: "User"
-        },
-        task: {
-            type: Schema.Types.ObjectId,
-            ref: "Task"
-        },
-        remarks: String
-    },
-    created_by: {
+    executive: {
         type: Schema.Types.ObjectId,
         required: true,
         ref: "User"
     },
-    updated_by: {
+    task: {
         type: Schema.Types.ObjectId,
         required: true,
-        ref: "User"
+        ref: "Task"
     },
+    remarks: String
 }, {
     timestamps: {
         createdAt: "created_at",
