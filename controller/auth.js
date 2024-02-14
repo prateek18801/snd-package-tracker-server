@@ -5,7 +5,7 @@ const postLogin = async (req, res, next) => {
     const { username, password } = req.body;
     try {
         const user = await User.findOne({ username });
-        if (user) {
+        if (user && !user.archived) {
             if (await user.match(password)) {
                 const payload = {
                     sub: user._id,
