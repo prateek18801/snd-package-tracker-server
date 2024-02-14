@@ -73,13 +73,13 @@ const postPackages = async (req, res, next) => {
 
         const data = {
             package_id: req.body.package_id,
+            cancelled: req.body.cancelled,
+            remarks: req.body.remarks,
+            task: task._id,
+            type: task.type,
             courier: task.courier,
             channel: task.channel,
-            type: task.type,
-            cancelled: req.body.cancelled,
-            executive: req.user.sub,
-            task: task._id,
-            remarks: req.body.remarks
+            executive: req.user.sub
         }
 
         // update remarks in case of re-scan

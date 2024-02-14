@@ -4,7 +4,6 @@ import Package from "../model/package.js";
 
 const getTasks = async (req, res, next) => {
     // role >= executive
-    const { fields } = req.query;
     try {
         if (req.params.id) {
             if (!isValidObjectId(req.params.id)) {
@@ -13,7 +12,7 @@ const getTasks = async (req, res, next) => {
                 throw error;
             }
             const task = await Task.findById(req.params.id)
-                .populate("packages", fields?.replace(/,/g, " "))
+                .populate("packages", req.query?.fields?.replace(/,/g, " "))
                 .lean();
             return res.status(200).json(task);
         }
