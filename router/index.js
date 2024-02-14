@@ -30,7 +30,7 @@ const router = Router();
 router.post("/v1/login", postLogin);
 
 // user routes
-router.get("/v1/users/:id?", auth("administrator"), getUsers);
+router.get("/v1/users/:id?", auth("admin"), getUsers);
 router.post("/v1/users", auth("manager"), postUsers);
 router.patch("/v1/users/:id", auth("manager"), patchUsers);
 router.delete("/v1/users/:id", auth("manager"), archiveUsers);
@@ -40,13 +40,13 @@ router.delete("/v1/users/:id/hard", auth("root"), deleteUsers);
 router.get("/v1/packages/:id?", auth("executive"), getPackages);
 router.post("/v1/packages", auth("executive"), postPackages);
 router.patch("/v1/packages/:id", auth("executive"), patchPackages);
-router.delete("/v1/packages/:id", auth("administrator"), deletePackages);
+router.delete("/v1/packages/:id", auth("admin"), deletePackages);
 
 // task routes
 router.get("/v1/tasks/:id?", auth("executive"), getTasks);
 router.post("/v1/tasks", auth("executive"), postTasks);
 router.patch("/v1/tasks/:id", auth("executive"), patchTasks);
-router.delete("/v1/tasks/:id", auth("administrator"), deleteTasks);
+router.delete("/v1/tasks/:id", auth("admin"), deleteTasks);
 
 // config routes
 router.get("/v1/config/:title?", getConfig);
@@ -58,7 +58,7 @@ router.get("/v1/report/packages", getPackageReport);
 
 // health routes
 router.get("/ping", ping);
-router.get("/health", auth("administrator"), health);
-router.post("/health", auth("administrator"), health);
+router.get("/health", auth("admin"), health);
+router.post("/health", auth("admin"), health);
 
 export default router;
