@@ -12,7 +12,12 @@ const getTasks = async (req, res, next) => {
                 throw error;
             }
             const task = await Task.findById(req.params.id)
-                .populate("packages", req.query?.fields?.replace(/,/g, " "))
+                // .populate("packages", req.query?.fields?.replace(/,/g, " "))
+                .populate({
+                    path: "packages",
+                    populate: { path: "executive", select: "name username" }
+                })
+                .populate("created_by", "name username")
                 .lean();
             return res.status(200).json(task);
         }
