@@ -6,8 +6,14 @@ const getPackages = async (req, res, next) => {
     // role >= executive
     try {
         if (req.params.id) {
-            const pcg = await Package.findOne({ package_id: req.params.id }).lean();
-            return res.status(200).json(pcg);
+            const pcg = await Package.findOne({ package_id: req.params.id })
+                .populate("executive", "name username")
+                .populate("task", "task_id is_open vehicle_no delex_name delex_contact")
+                .lean();
+            if (pcg) return res.status(200).json(pcg);
+            return res.status(404).json({
+                message: "package not found"
+            });
         }
 
         // create filter for requested fields
