@@ -35,6 +35,7 @@ const getTasks = async (req, res, next) => {
         const tasks = await Task.find(filter)
             .skip((page - 1) * limit)
             .limit(limit)
+            .populate("created_by", "name username")
             .sort({ created_at: -1 })
             .lean();
 
