@@ -1,4 +1,3 @@
-import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";
 import { json2csv } from "json-2-csv";
@@ -27,23 +26,23 @@ const getPackageReport = async (req, res, next) => {
             .populate("executive", "name username")
             .lean();
 
-        const report_data = packages.map(record => ({
-            package_id: record.package_id,
-            type: record.type,
-            courier: record.courier,
-            channel: record.channel,
-            status: record.cancelled ? "cancel" : record.type === "incoming" ? "return" : "dispatch",
-            executive: `${record.executive?.name} (${record.executive?.username})`,
-            task_id: record.task?.task_id,
-            remarks: record.remarks || "",
-            scanned_at: new Date(record.created_at).toLocaleString().toUpperCase()
+        const reportData = packages.map((record, i) => ({
+            "SNo": i + 1,
+            "Package ID": record.package_id,
+            "Type": record.type,
+            "Courier": record.courier,
+            "Channel": record.channel,
+            "Status": record.cancelled ? "cancel" : record.type === "incoming" ? "return" : "dispatch",
+            "Executive": `${record.executive.name} (${record.executive.username})`,
+            "Task ID": record.task.task_id,
+            "Remarks": record.remarks || "",
+            "Scanned At": new Date(record.created_at).toLocaleString().toUpperCase()
         }));
 
-        const csv_string = json2csv(report_data);
-        const __dirname = fileURLToPath(new URL('.', import.meta.url));
-        const report_path = path.join(__dirname, "..", "report.csv");
-        await fs.writeFile(report_path, csv_string);
-        return res.status(200).download(report_path, `report.csv`);
+        const csvString = json2csv(reportData);
+        const reportFilePath = fileURLToPath(new URL('../files/report.csv', import.meta.url));
+        await fs.writeFile(reportFilePath, csvString);
+        return res.status(200).download(reportFilePath, `report.csv`);
     } catch (err) {
         next(err);
     }
@@ -59,28 +58,28 @@ const getTaskReport = async (req, res, next) => {
             .populate("created_by", "name username")
             .lean();
 
-        const report_data = task.packages.map((record, i) => ({
-            package_id: record.package_id,
-            type: record.type,
-            courier: record.courier,
-            channel: record.channel,
-            status: record.cancelled ? "cancel" : record.type === "incoming" ? "return" : "dispatch",
-            executive: `${record.executive?.name} (${record.executive?.username})`,
-            task_id: task.task_id,
-            remarks: record.remarks || "",
-            scanned_at: new Date(record.created_at).toLocaleString().toUpperCase(),
-            task_status: i === 0 ? task.is_open ? "open" : "closed" : "",
-            created_by: i === 0 ? `${task.created_by?.name} (${task.created_by?.username})` : "",
-            vehicle_no: i === 0 ? task.vehicle_no : "",
-            del_ex_name: i === 0 ? task.delex_name : "",
-            del_ex_ph: i === 0 ? task.delex_contact : ""
+        const reportData = task.packages.map((record, i) => ({
+            "SNo": i + 1,
+            "Package ID": record.package_id,
+            "Type": record.type,
+            "Courier": record.courier,
+            "Channel": record.channel,
+            "Status": record.cancelled ? "cancel" : record.type === "incoming" ? "return" : "dispatch",
+            "Executive": `${record.executive.name} (${record.executive.username})`,
+            "Task ID": task.task_id,
+            "Remarks": record.remarks || "",
+            "Scanned At": new Date(record.created_at).toLocaleString().toUpperCase(),
+            "Task Status": !i ? task.is_open ? "open" : "closed" : "",
+            "Created By": !i ? `${task.created_by.name} (${task.created_by.username})` : "",
+            "Vehicle No": !i ? task.vehicle_no : "",
+            "Delivery Ex": !i ? task.delex_name : "",
+            "Delivery Ph": !i ? task.delex_contact : ""
         }));
 
-        const csv_string = json2csv(report_data);
-        const __dirname = fileURLToPath(new URL('.', import.meta.url));
-        const report_path = path.join(__dirname, "..", "report.csv");
-        await fs.writeFile(report_path, csv_string);
-        return res.status(200).download(report_path, `report.csv`);
+        const csvString = json2csv(reportData);
+        const reportFilePath = fileURLToPath(new URL('../files/report.csv', import.meta.url));
+        await fs.writeFile(reportFilePath, csvString);
+        return res.status(200).download(reportFilePath, `report.csv`);
     } catch (err) {
         next(err);
     }
