@@ -22,6 +22,7 @@ import {
 import { postLogin } from "../controller/auth.js";
 import { ping, health } from "../controller/health.js";
 import { getConfig, postConfig } from "../controller/config.js";
+import { getTemplate, postReconcile } from "../controller/reconcile.js";
 import { getPackageReport, getTaskReport } from "../controller/report.js";
 
 const router = Router();
@@ -55,6 +56,10 @@ router.post("/v1/config/:title", postConfig);
 // report routes
 router.get("/v1/report/tasks", getTaskReport);
 router.get("/v1/report/packages", getPackageReport);
+
+// reco routes
+router.get("/v1/template", getTemplate);
+router.get("/v1/reconcile", postReconcile);
 
 // health routes
 router.get("/ping", ping);
