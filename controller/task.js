@@ -71,10 +71,10 @@ const getTasks = async (req, res, next) => {
 const postTasks = async (req, res, next) => {
     // role >= executive
     try {
-        const { task_id, ..._ } = (await Task.findOne({}).sort({ "created_at": -1 })) || { task_id: 0 };
+        const { task_id, ..._ } = (await Task.findOne({ type: req.body.type }).sort({ "created_at": -1 })) || { task_id: "00000" };
         const data = {
             // TODO - generate task_id
-            task_id: ("000" + (+task_id + 1)).slice(-4),
+            task_id: `${req.body.type[0].toUpperCase()}B${("00000" + (+(task_id.slice(-5)) + 1)).slice(-5)}`,
             type: req.body.type,
             is_open: req.body.is_open,
             courier: req.body.courier,
