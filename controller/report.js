@@ -1,4 +1,4 @@
-import fs from "fs/promises";
+import { writeFile } from "fs/promises";
 import { fileURLToPath } from "url";
 import { json2csv } from "json-2-csv";
 import Task from "../model/task.js";
@@ -41,8 +41,8 @@ const getPackageReport = async (req, res, next) => {
 
         const csvString = json2csv(reportData);
         const reportFilePath = fileURLToPath(new URL('../files/report.csv', import.meta.url));
-        await fs.writeFile(reportFilePath, csvString);
-        return res.status(200).download(reportFilePath, `report.csv`);
+        await writeFile(reportFilePath, csvString);
+        return res.status(200).download(reportFilePath, `REPORT_P_${new Date().toISOString().split("T")[0].replace(/-/g, "").slice(-6)}.csv`);
     } catch (err) {
         next(err);
     }
@@ -78,8 +78,8 @@ const getTaskReport = async (req, res, next) => {
 
         const csvString = json2csv(reportData);
         const reportFilePath = fileURLToPath(new URL('../files/report.csv', import.meta.url));
-        await fs.writeFile(reportFilePath, csvString);
-        return res.status(200).download(reportFilePath, `report.csv`);
+        await writeFile(reportFilePath, csvString);
+        return res.status(200).download(reportFilePath, `REPORT_T${task.task_id}_${new Date().toISOString().split("T")[0].replace(/-/g, "").slice(-6)}.csv`);
     } catch (err) {
         next(err);
     }
