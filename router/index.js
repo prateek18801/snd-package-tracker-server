@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 import auth from "../middleware/auth.js";
 import {
     getUsers,
@@ -26,6 +27,7 @@ import { getTemplate, postReconcile } from "../controller/reconcile.js";
 import { getPackageReport, getTaskReport } from "../controller/report.js";
 
 const router = Router();
+const upload = multer({ dest: "files/" });
 
 // auth routes
 router.post("/v1/login", postLogin);
@@ -59,7 +61,7 @@ router.get("/v1/report/packages", getPackageReport);
 
 // reco routes
 router.get("/v1/template", getTemplate);
-router.get("/v1/reconcile", postReconcile);
+router.post("/v1/reconcile", upload.single("sheet"), postReconcile);
 
 // health routes
 router.get("/ping", ping);
