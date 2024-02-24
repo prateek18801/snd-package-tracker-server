@@ -43,7 +43,7 @@ router.delete("/v1/users/:id/hard", auth("root"), deleteUsers);
 router.get("/v1/packages/:id?", auth("executive"), getPackages);
 router.post("/v1/packages", auth("executive"), postPackages);
 router.patch("/v1/packages/:id", auth("executive"), patchPackages);
-router.delete("/v1/packages/:id", auth("admin"), deletePackages);
+router.delete("/v1/packages/:id", auth("executive"), deletePackages);
 
 // task routes
 router.get("/v1/tasks/:id?", auth("executive"), getTasks);
@@ -53,7 +53,7 @@ router.delete("/v1/tasks/:id", auth("admin"), deleteTasks);
 
 // config routes
 router.get("/v1/config/:title?", getConfig);
-router.post("/v1/config/:title", postConfig);
+router.post("/v1/config/:title", auth("admin"), postConfig);
 
 // report routes
 router.get("/v1/report/tasks", getTaskReport);
